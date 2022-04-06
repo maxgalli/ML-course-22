@@ -1,4 +1,5 @@
 import pandas as pd
+import sys
 import numpy as np
 import sklearn.metrics as metrics
 
@@ -19,13 +20,19 @@ def get_score(df_true, df_submission):
     return score
 
 
-filename = 'sample.zip'
-df_submission = pd.read_csv(filename)
+def main():
+    filename = sys.argv[1]
+    ground_filename = "sample.zip"
+    df_submission = pd.read_csv(filename)
 
-# generate a baseline based on sample.zip
-df_true = pd.read_csv(filename)
-for label in TESTS + ['LABEL_Sepsis']:
-    # round classification labels
-    df_true[label] = np.around(df_true[label].values)
+    # generate a baseline based on sample.zip
+    df_true = pd.read_csv(ground_filename)
+    for label in TESTS + ['LABEL_Sepsis']:
+        # round classification labels
+        df_true[label] = np.around(df_true[label].values)
 
-print('Score of sample.zip with itself as groundtruth', get_score(df_true, df_submission))
+    print(f'Score of {filename} with {ground_filename} as groundtruth {get_score(df_true, df_submission)}')
+
+
+if __name__ == '__main__':
+    main()
