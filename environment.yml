@@ -1,0 +1,19 @@
+name: ML-projects
+channels:
+  - conda-forge
+dependencies:
+  - python
+  - jupyterlab>=2.0.0
+  - numpy>=1.18.1
+  - bokeh>=2.0.0
+  - notebook
+  - ipywidgets>=7.5
+  - uproot
+  - aghast
+  - boost-histogram
+  - mplhep
+  - pandas
+  - tensorflow
+  - opencv
+  - keras
+  - scikit-learn
