@@ -1,0 +1,1 @@
+task3/handout/food/*.jpg filter=lfs diff=lfs merge=lfs -text
