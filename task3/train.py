@@ -1,10 +1,7 @@
-import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
-import matplotlib.image as mpimg
 import cv2
 import tensorflow as tf
-from sklearn.utils import shuffle
 from sklearn.model_selection import train_test_split
 from datetime import datetime
 import concurrent.futures
@@ -32,7 +29,7 @@ if __name__ == "__main__":
     img_rows = 224
     img_cols = 224
     input_shape = (img_rows, img_cols, 3)
-    epochs = 10
+    epochs = 20
 
     try:
         with open('features_vg16.pickle', 'rb') as f:
@@ -90,10 +87,11 @@ if __name__ == "__main__":
 
     X_train, X_test, y_train, y_test = train_test_split(x_train, y_labels, test_size=0.2, random_state=42)
 
-
     inp = Input(shape=(X_train.shape[1],))
-    layer = Dense(64, activation=tf.nn.relu, name="Dense1")(inp)
-    layer = Dense(12, activation=tf.nn.relu, name="Dense2")(layer)
+    layer = Dense(256, activation=tf.nn.relu, name="Dense1")(inp)
+    layer = Dense(128, activation=tf.nn.relu, name="Dense2")(inp)
+    layer = Dense(64, activation=tf.nn.relu, name="Dense3")(inp)
+    layer = Dense(12, activation=tf.nn.relu, name="Dense4")(layer)
     output = Dense(1, activation=tf.nn.sigmoid)(layer)
 
     cl_model = Model(inp, output)
@@ -104,3 +102,5 @@ if __name__ == "__main__":
     model_extension = datetime.today().strftime("%Y%m%d-%H%M%S")
     print(f"Saving model to model/model_{model_extension}")
     cl_model.save("models/model_{}".format(model_extension))
+    with open("train_logs/history_{}.pickle".format(model_extension), 'wb') as f:
+        pickle.dump(history.history, f)
