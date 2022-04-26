@@ -29,7 +29,7 @@ if __name__ == "__main__":
     img_rows = 224
     img_cols = 224
     input_shape = (img_rows, img_cols, 3)
-    epochs = 4
+    epochs = 6
 
     try:
         with open('features_vg16.pickle', 'rb') as f:
@@ -88,8 +88,8 @@ if __name__ == "__main__":
     X_train, X_test, y_train, y_test = train_test_split(x_train, y_labels, test_size=0.2, random_state=42)
 
     inp = Input(shape=(X_train.shape[1],))
-    layer = Dense(2000, activation=tf.nn.relu)(inp)
-    layer = Dense(200, activation=tf.nn.relu)(layer)
+    layer = Dense(2200, activation=tf.nn.relu)(inp)
+    layer = Dense(100, activation=tf.nn.relu)(layer)
     output = Dense(1, activation=tf.nn.sigmoid)(layer)
 
     cl_model = Model(inp, output)
