@@ -126,48 +126,29 @@ if __name__ == "__main__":
     positive_input = Input(shape=positive_train.shape[1])
     negative_input = Input(shape=negative_train.shape[1])
 
+    distances = DistanceLayer()(
+        anchor_input,
+        positive_input,
+        negative_input,
+    )
+
     sum_ap = layers.concatenate([anchor_input, positive_input])
     sum_ap = layers.BatchNormalization()(sum_ap)
-    layer_ap = layers.Dense(2000, activation="relu", name="ap1")(sum_ap)
-    layer_ap = layers.Dense(1000, activation="relu", name="ap2")(layer_ap)
-    layer_ap = layers.Dense(500, activation="relu", name="ap3")(layer_ap)
-
-    sub_ap = layers.Subtract()([anchor_input, positive_input])
-    sub_ap = layers.BatchNormalization()(sub_ap)
-    layer_sap = layers.Dense(2000, activation="relu", name="sap1")(sub_ap)
-    layer_sap = layers.Dense(1000, activation="relu", name="sap2")(layer_sap)
-    layer_sap = layers.Dense(500, activation="relu", name="sap3")(layer_sap)
+    layer_ap = layers.Dense(512, activation="relu", name="ap1")(sum_ap)
+    layer_ap = layers.Dense(258, activation="relu", name="ap2")(layer_ap)
+    layer_ap = layers.Dense(100, activation="relu", name="ap3")(layer_ap)
 
     sum_an = layers.concatenate([anchor_input, negative_input])
     sum_an = layers.BatchNormalization()(sum_an)
-    layer_an = layers.Dense(2000, activation="relu", name="an1")(sum_an)
-    layer_an = layers.Dense(1000, activation="relu", name="an2")(layer_an)
-    layer_an = layers.Dense(500, activation="relu", name="an3")(layer_an)
+    layer_an = layers.Dense(512, activation="relu", name="an1")(sum_an)
+    layer_an = layers.Dense(258, activation="relu", name="an2")(layer_an)
+    layer_an = layers.Dense(100, activation="relu", name="an3")(layer_an)
 
-    sub_an = layers.Subtract()([anchor_input, negative_input])
-    sub_an = layers.BatchNormalization()(sub_an)
-    layer_san = layers.Dense(2000, activation="relu", name="san1")(sub_an)
-    layer_san = layers.Dense(1000, activation="relu", name="san2")(layer_san)
-    layer_san = layers.Dense(500, activation="relu", name="san3")(layer_san)
-
-    sum2_ap = layers.concatenate([layer_ap, layer_sap])
-    sum2_ap = layers.BatchNormalization()(sum2_ap)
-    layer2_ap = layers.Dense(2000, activation="relu", name="ap4")(sum2_ap)
-    layer2_ap = layers.Dense(1000, activation="relu", name="ap5")(layer2_ap)
-    layer2_ap = layers.Dense(500, activation="relu", name="ap6")(layer2_ap)
-
-    sum2_an = layers.concatenate([layer_an, layer_san])
-    sum2_an = layers.BatchNormalization()(sum2_an)
-    layer2_an = layers.Dense(2000, activation="relu", name="an4")(sum2_an)
-    layer2_an = layers.Dense(1000, activation="relu", name="an5")(layer2_an)
-    layer2_an = layers.Dense(500, activation="relu", name="an6")(layer2_an)
-    
-    sum_apn = layers.concatenate([layer2_ap, layer2_an])
+    sum_apn = layers.concatenate([layer_ap, layer_an])
     sum_apn = layers.BatchNormalization()(sum_apn)
     layer_apn = layers.Dense(1000, activation="relu", name="apn1")(sum_apn)
     layer_apn = layers.Dense(500, activation="relu", name="apn2")(layer_apn)
-    layer_apn = layers.Dense(300, activation="relu", name="apn3")(layer_apn)
-    layer_apn = layers.Dense(200, activation="relu", name="apn4")(layer_apn)
+    layer_apn = layers.Dense(200, activation="relu", name="apn3")(layer_apn)
     output_final = layers.Dense(1, activation="sigmoid", name="output_final")(layer_apn)
 
     model = Model(inputs=[anchor_input, positive_input, negative_input], outputs=output_final)
