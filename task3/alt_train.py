@@ -22,6 +22,21 @@ def get_image_vector(img_path):
     img = img.reshape(1, 224, 224, 3)
     return preprocess_input(img)
 
+class DistanceLayer(layers.Layer):
+    """
+    This layer is responsible for computing the distance between the anchor
+    embedding and the positive embedding, and the anchor embedding and the
+    negative embedding.
+    """
+
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
+
+    def call(self, anchor, positive, negative):
+        ap_distance = tf.reduce_sum(tf.square(anchor - positive), -1)
+        an_distance = tf.reduce_sum(tf.square(anchor - negative), -1)
+        return (ap_distance, an_distance)
+
 
 if __name__ == "__main__":
     # Check if running on GPU
@@ -37,7 +52,7 @@ if __name__ == "__main__":
     img_rows = 224
     img_cols = 224
     input_shape = (img_rows, img_cols, 3)
-    epochs = 10
+    epochs = 4
 
     features_file_name = "features_vgg16.pkl"
 
@@ -111,14 +126,24 @@ if __name__ == "__main__":
     positive_input = Input(shape=positive_train.shape[1])
     negative_input = Input(shape=negative_train.shape[1])
 
+    distances = DistanceLayer()(
+        anchor_input,
+        positive_input,
+        negative_input,
+    )
+
     sum_ap = layers.concatenate([anchor_input, positive_input])
+    sum_ap = layers.BatchNormalization()(sum_ap)
     layer_ap = layers.Dense(2000, activation="relu", name="ap1")(sum_ap)
     layer_ap = layers.Dense(500, activation="relu", name="ap2")(layer_ap)
+
     sum_an = layers.concatenate([anchor_input, negative_input])
+    sum_an = layers.BatchNormalization()(sum_an)
     layer_an = layers.Dense(2000, activation="relu", name="an1")(sum_an)
     layer_an = layers.Dense(500, activation="relu", name="an2")(layer_an)
 
     sum_apn = layers.concatenate([layer_ap, layer_an])
+    sum_apn = layers.BatchNormalization()(sum_apn)
     layer_apn = layers.Dense(1000, activation="relu", name="apn1")(sum_apn)
     layer_apn = layers.Dense(200, activation="relu", name="apn2")(layer_apn)
     output_final = layers.Dense(1, activation="sigmoid", name="output_final")(layer_apn)
