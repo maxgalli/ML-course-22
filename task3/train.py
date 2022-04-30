@@ -36,7 +36,7 @@ if __name__ == "__main__":
     img_rows = 224
     img_cols = 224
     input_shape = (img_rows, img_cols, 3)
-    epochs = 6
+    epochs = 5
 
     features_file_name = "features_vgg16.pkl"
 
@@ -97,8 +97,14 @@ if __name__ == "__main__":
     X_train, X_test, y_train, y_test = train_test_split(x_train, y_labels, test_size=0.2, random_state=42)
 
     inp = Input(shape=(X_train.shape[1],))
-    layer = Dense(2400, activation=tf.nn.relu)(inp)
+    layer = Dense(512, activation=tf.nn.relu)(inp)
+    layer = Dense(256, activation=tf.nn.relu)(layer)
+    layer = Dense(256, activation=tf.nn.relu)(layer)
     layer = Dense(150, activation=tf.nn.relu)(layer)
+    layer = Dense(80, activation=tf.nn.relu)(layer)
+    layer = Dense(80, activation=tf.nn.relu)(layer)
+    layer = Dense(80, activation=tf.nn.relu)(layer)
+    layer = Dense(80, activation=tf.nn.relu)(layer)
     output = Dense(1, activation=tf.nn.sigmoid)(layer)
 
     cl_model = Model(inp, output)
