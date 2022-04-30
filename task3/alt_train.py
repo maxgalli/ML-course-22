@@ -126,21 +126,15 @@ if __name__ == "__main__":
     positive_input = Input(shape=positive_train.shape[1])
     negative_input = Input(shape=negative_train.shape[1])
 
-    distances = DistanceLayer()(
-        anchor_input,
-        positive_input,
-        negative_input,
-    )
-
-    sum_ap = layers.concatenate([anchor_input, positive_input])
-    sum_ap = layers.BatchNormalization()(sum_ap)
-    layer_ap = layers.Dense(2000, activation="relu", name="ap1")(sum_ap)
+    sub_ap = layers.Subtract(name="sub_ap")([anchor_input, positive_input])
+    sub_ap = layers.BatchNormalization()(sub_ap)
+    layer_ap = layers.Dense(2000, activation="relu", name="ap1")(sub_ap)
     layer_ap = layers.Dense(1000, activation="relu", name="ap2")(layer_ap)
     layer_ap = layers.Dense(500, activation="relu", name="ap3")(layer_ap)
 
-    sum_an = layers.concatenate([anchor_input, negative_input])
-    sum_an = layers.BatchNormalization()(sum_an)
-    layer_an = layers.Dense(2000, activation="relu", name="an1")(sum_an)
+    sub_an = layers.Subtract(name="sub_an")([anchor_input, negative_input])
+    sub_an = layers.BatchNormalization()(sub_an)
+    layer_an = layers.Dense(2000, activation="relu", name="an1")(sub_an)
     layer_an = layers.Dense(1000, activation="relu", name="an2")(layer_an)
     layer_an = layers.Dense(500, activation="relu", name="an3")(layer_an)
 
