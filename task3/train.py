@@ -10,8 +10,8 @@ from glob import glob
 
 from tensorflow.keras.layers import Dense, Input, Flatten
 from tensorflow.keras.models import Model
-from keras.applications.vgg16 import preprocess_input
-from keras.applications.vgg16 import VGG16
+from tensorflow.keras.applications.vgg16 import preprocess_input
+from tensorflow.keras.applications.vgg16 import VGG16 as TrainedModel
 
 
 def get_image_vector(img_path):
@@ -21,7 +21,14 @@ def get_image_vector(img_path):
     img = img.reshape(1, 224, 224, 3)
     return preprocess_input(img)
 
+
 if __name__ == "__main__":
+    # Check if running on GPU
+    device_name = tf.test.gpu_device_name()
+    if device_name != '/device:GPU:0':
+        print('GPU device not found')
+    else:
+        print('Found GPU at: {}'.format(device_name))
 
     train = np.loadtxt("handout/train_triplets.txt", dtype=str, delimiter=" ")
 
@@ -31,12 +38,14 @@ if __name__ == "__main__":
     input_shape = (img_rows, img_cols, 3)
     epochs = 5
 
+    features_file_name = "features_vgg16.pkl"
+
     try:
-        with open('features_vg16.pickle', 'rb') as f:
+        with open(features_file_name, 'rb') as f:
             features_dct = pickle.load(f)
     except FileNotFoundError:
         # Pre-trained model to extract features
-        model = VGG16(include_top=False, input_tensor=Input(shape=input_shape))
+        model = TrainedModel(include_top=False, input_tensor=Input(shape=input_shape))
         flat1 = Flatten()(model.layers[-1].output)
         model = Model(inputs=model.inputs, outputs=flat1)
         model.compile(optimizer='adam', loss='categorical_crossentropy', metrics=['accuracy'])
@@ -59,7 +68,7 @@ if __name__ == "__main__":
         features = model.predict(np.concatenate(list(preprocessed_images.values()), axis=0))
         features_dct = {k: v for k, v in zip(preprocessed_images.keys(), features)}
 
-        with open('features_vg16.pickle', 'wb') as f:
+        with open(features_file_name, 'wb') as f:
             pickle.dump(features_dct, f)
 
     full_rows = []
