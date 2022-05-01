@@ -121,6 +121,13 @@ if __name__ == "__main__":
     positive_val = np.vstack([features_dct[e[1]] for e in X_val])
     negative_val = np.vstack([features_dct[e[2]] for e in X_val])
 
+    # Assign sample weights using cosine loss
+    print("Computing sample weights using stupid for loops...")
+    cosine_loss = tf.keras.metrics.CosineSimilarity()
+    ap_train_distance = np.array([cosine_loss(x, y) for x, y in zip(anchor_train, positive_train)])
+    an_train_distance = np.array([cosine_loss(x, y) for x, y in zip(anchor_train, negative_train)])
+    weights = np.array([1 if ap_train_distance[i] > an_train_distance[i] else 0.9 for i in range(len(ap_train_distance))])
+
     # Model
     anchor_input = Input(shape=anchor_train.shape[1])
     positive_input = Input(shape=positive_train.shape[1])
@@ -162,7 +169,7 @@ if __name__ == "__main__":
 
     model.compile(optimizer='adam', loss='binary_crossentropy', metrics=['accuracy'])
 
-    history = model.fit([anchor_train, positive_train, negative_train], y_train, epochs=epochs, validation_data=([anchor_val, positive_val, negative_val], y_val))
+    history = model.fit([anchor_train, positive_train, negative_train], y_train, sample_weight=weights, epochs=epochs, validation_data=([anchor_val, positive_val, negative_val], y_val))
 
     model_extension = datetime.today().strftime("%Y%m%d-%H%M%S")
     print(f"Saving model to model/model_{model_extension}")
