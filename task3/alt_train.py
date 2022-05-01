@@ -121,13 +121,6 @@ if __name__ == "__main__":
     positive_val = np.vstack([features_dct[e[1]] for e in X_val])
     negative_val = np.vstack([features_dct[e[2]] for e in X_val])
 
-    # Assign sample weights using cosine loss
-    print("Computing sample weights using stupid for loops...")
-    cosine_loss = tf.keras.metrics.CosineSimilarity()
-    ap_train_distance = np.array([cosine_loss(x, y) for x, y in zip(anchor_train, positive_train)])
-    an_train_distance = np.array([cosine_loss(x, y) for x, y in zip(anchor_train, negative_train)])
-    weights = np.array([1 if ap_train_distance[i] > an_train_distance[i] else 0.7 for i in range(len(ap_train_distance))])
-
     # Model
     anchor_input = Input(shape=anchor_train.shape[1])
     positive_input = Input(shape=positive_train.shape[1])
@@ -142,34 +135,27 @@ if __name__ == "__main__":
     sum_ap = layers.concatenate([anchor_input, positive_input])
     sum_ap = layers.BatchNormalization()(sum_ap)
     layer_ap = layers.Dense(2000, activation="relu", name="ap1")(sum_ap)
-    layer_ap = layers.BatchNormalization()(layer_ap)
     layer_ap = layers.Dense(1000, activation="relu", name="ap2")(layer_ap)
-    layer_ap = layers.BatchNormalization()(layer_ap)
     layer_ap = layers.Dense(500, activation="relu", name="ap3")(layer_ap)
 
     sum_an = layers.concatenate([anchor_input, negative_input])
     sum_an = layers.BatchNormalization()(sum_an)
     layer_an = layers.Dense(2000, activation="relu", name="an1")(sum_an)
-    layer_an = layers.BatchNormalization()(layer_an)
     layer_an = layers.Dense(1000, activation="relu", name="an2")(layer_an)
-    layer_an = layers.BatchNormalization()(layer_an)
     layer_an = layers.Dense(500, activation="relu", name="an3")(layer_an)
 
     sum_apn = layers.concatenate([layer_ap, layer_an])
     sum_apn = layers.BatchNormalization()(sum_apn)
     layer_apn = layers.Dense(1000, activation="relu", name="apn1")(sum_apn)
-    layer_apn = layers.BatchNormalization()(layer_apn)
     layer_apn = layers.Dense(500, activation="relu", name="apn2")(layer_apn)
-    layer_apn = layers.BatchNormalization()(layer_apn)
     layer_apn = layers.Dense(200, activation="relu", name="apn3")(layer_apn)
-    layer_apn = layers.BatchNormalization()(layer_apn)
     output_final = layers.Dense(1, activation="sigmoid", name="output_final")(layer_apn)
 
     model = Model(inputs=[anchor_input, positive_input, negative_input], outputs=output_final)
 
     model.compile(optimizer='adam', loss='binary_crossentropy', metrics=['accuracy'])
 
-    history = model.fit([anchor_train, positive_train, negative_train], y_train, sample_weight=weights, epochs=epochs, validation_data=([anchor_val, positive_val, negative_val], y_val))
+    history = model.fit([anchor_train, positive_train, negative_train], y_train, epochs=epochs, validation_data=([anchor_val, positive_val, negative_val], y_val))
 
     model_extension = datetime.today().strftime("%Y%m%d-%H%M%S")
     print(f"Saving model to model/model_{model_extension}")
