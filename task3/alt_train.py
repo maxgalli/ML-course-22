@@ -12,7 +12,8 @@ from tensorflow.keras.layers import Dense, Input, Flatten
 from tensorflow.keras import layers
 from tensorflow.keras.models import Model
 from tensorflow.keras.applications.vgg16 import preprocess_input
-from tensorflow.keras.applications.vgg16 import VGG16 as TrainedModel
+#from tensorflow.keras.applications.vgg16 import VGG16 as TrainedModel
+from keras.applications.inception_v3 import InceptionV3 as TrainedModel
 
 
 def get_image_vector(img_path):
@@ -52,16 +53,16 @@ if __name__ == "__main__":
     img_rows = 224
     img_cols = 224
     input_shape = (img_rows, img_cols, 3)
-    epochs = 10
+    epochs = 40
 
-    features_file_name = "features_vgg16.pkl"
+    features_file_name = "features_iv3.pkl"
 
     try:
         with open(features_file_name, 'rb') as f:
             features_dct = pickle.load(f)
     except FileNotFoundError:
         # Pre-trained model to extract features
-        model = TrainedModel(include_top=False, input_tensor=Input(shape=input_shape))
+        model = TrainedModel(include_top=False, input_tensor=Input(shape=input_shape), pooling='avg')
         flat1 = Flatten()(model.layers[-1].output)
         model = Model(inputs=model.inputs, outputs=flat1)
         model.compile(optimizer='adam', loss='categorical_crossentropy', metrics=['accuracy'])
