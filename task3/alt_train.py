@@ -126,7 +126,7 @@ if __name__ == "__main__":
     cosine_loss = tf.keras.metrics.CosineSimilarity()
     ap_train_distance = np.array([cosine_loss(x, y) for x, y in zip(anchor_train, positive_train)])
     an_train_distance = np.array([cosine_loss(x, y) for x, y in zip(anchor_train, negative_train)])
-    weights = np.array([1 if ap_train_distance[i] > an_train_distance[i] else 0.9 for i in range(len(ap_train_distance))])
+    weights = np.array([1 if ap_train_distance[i] > an_train_distance[i] else 0.7 for i in range(len(ap_train_distance))])
 
     # Model
     anchor_input = Input(shape=anchor_train.shape[1])
