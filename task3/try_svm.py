@@ -43,6 +43,7 @@ def main():
     steps = [('scaling', StandardScaler()), ('reduce_dim', PCA(n_components=80)), ('clf', SVC())]
     pipeline = Pipeline(steps)
 
+    print("Fitting the pipeline...")
     pipeline.fit(X_train, y_train)
 
     y_pred = pipeline.predict(X_test)
@@ -56,6 +57,7 @@ def main():
         full_rows.append(np.hstack([features_dct[n] for n in row]))
     test_arr = np.vstack(full_rows)
 
+    print("Predicting...")
     predictions_int = pipeline.predict(test_arr)
 
     predictions_int = predictions_int.astype(int)
