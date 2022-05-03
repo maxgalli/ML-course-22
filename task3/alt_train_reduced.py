@@ -41,7 +41,7 @@ if __name__ == "__main__":
     img_rows = 224
     img_cols = 224
     input_shape = (img_rows, img_cols, 3)
-    epochs = 40
+    epochs = 10
 
     features_file_name = "features_vgg16.pkl"
 
@@ -139,19 +139,19 @@ if __name__ == "__main__":
 
     sum_ap = layers.concatenate([anchor_input, positive_input])
     sum_ap = layers.BatchNormalization()(sum_ap)
-    layer_ap = layers.Dense(200, activation="relu", name="ap1")(sum_ap)
-    layer_ap = layers.Dense(100, activation="relu", name="ap2")(layer_ap)
+    layer_ap = layers.Dense(100, activation="relu", name="ap1")(sum_ap)
+    layer_ap = layers.Dense(80, activation="relu", name="ap2")(layer_ap)
     layer_ap = layers.Dense(50, activation="relu", name="ap3")(layer_ap)
 
     sum_an = layers.concatenate([anchor_input, negative_input])
     sum_an = layers.BatchNormalization()(sum_an)
-    layer_an = layers.Dense(200, activation="relu", name="an1")(sum_an)
-    layer_an = layers.Dense(100, activation="relu", name="an2")(layer_an)
+    layer_an = layers.Dense(100, activation="relu", name="an1")(sum_an)
+    layer_an = layers.Dense(80, activation="relu", name="an2")(layer_an)
     layer_an = layers.Dense(50, activation="relu", name="an3")(layer_an)
 
     sum_apn = layers.concatenate([layer_ap, layer_an])
     sum_apn = layers.BatchNormalization()(sum_apn)
-    layer_apn = layers.Dense(100, activation="relu", name="apn1")(sum_apn)
+    layer_apn = layers.Dense(800, activation="relu", name="apn1")(sum_apn)
     layer_apn = layers.Dense(50, activation="relu", name="apn2")(layer_apn)
     layer_apn = layers.Dense(20, activation="relu", name="apn3")(layer_apn)
     output_final = layers.Dense(1, activation="sigmoid", name="output_final")(layer_apn)
