@@ -21,7 +21,7 @@ import pandas as pd
 Net
 """
 class EmbeddingNet(nn.Module):
-    """EmbeddingNet using the specified model in backbone()."""
+    """EmbeddingNet using the specified model in base_model()."""
 
     def __init__(self, resnet):
         """Initialize EmbeddingNet model."""
@@ -39,8 +39,8 @@ class EmbeddingNet(nn.Module):
         return out
 
 
-def backbone():
-    return EmbeddingNet(models.resnet18(pretrained=True))
+def base_model():
+    return EmbeddingNet(models.resnet50(pretrained=True))
 
 
 class TripletNet(nn.Module):
@@ -113,7 +113,6 @@ class TripletImageLoader(Dataset):
         return len(self.triplets)
 
 
-#Function to return the actual dataset loaders for training, test and validation triplets
 def DatasetImageLoader(root, batch_size_train, batch_size_test, batch_size_val):
     """
     Args:
@@ -247,6 +246,7 @@ def train(net, criterion, optimizer, start_epoch, epochs, trainloader, valloader
 
         val_loss /= len(valloader)
         print(f"Validation Epoch: {epoch + 1} | Class. Loss: {val_loss}")
+        # Go back to training mode, see https://stackoverflow.com/questions/60018578/what-does-model-eval-do-in-pytorch
         net.train()
 
     print("Finished Training...")
@@ -270,8 +270,8 @@ def main():
     np.savetxt("train_triplets_splitted.txt", train_triplets, fmt='%s %s %s')
     np.savetxt("validation_triplets_splitted.txt", val_triplets, fmt='%s %s %s')
 
-    #Initialize the model
-    net = TripletNet(backbone())
+    # Initialize the model
+    net = TripletNet(base_model())
 
     print("Initialize CUDA support for TripletNet model...")
     net = torch.nn.DataParallel(net).cuda()
@@ -287,19 +287,18 @@ def main():
     test_batch_size = 120
     path = "../handout/food"
 
-    #Load train, test, validation triplets
+    # Load train, test, validation triplets
     trainloader, testloader, valloader = DatasetImageLoader(path.rstrip("\n"), train_batch_size, test_batch_size, val_batch_size)
 
-    #train model
+    # Train model
     trained_net = train(net, criterion, optimizer, 0, 1, trainloader, valloader, train_batch_size, val_batch_size)
 
-    #Switch the net to evaluation mode
+    # Switch the net to evaluation mode
     trained_net.eval()
 
-    predicted_labels = np.zeros(59544)
     pred_test=[]
 
-    #Predict labels 1 or 0 for each test triplet
+    # Predict labels 1 or 0 for each test triplet
     for batch_idx, (data1, data2, data3) in enumerate(testloader):
 
         data1, data2, data3 = data1.cuda(), data2.cuda(), data3.cuda()
@@ -311,13 +310,10 @@ def main():
             # compute output and loss
             embedded_a, embedded_p, embedded_n = trained_net(data1, data2, data3)
 
-        dist_ap = np.linalg.norm(np.squeeze((embedded_a-embedded_p).cpu().detach().numpy()),ord=2, axis=-1)
+        dist_ap = np.linalg.norm(np.squeeze((embedded_a-embedded_p).cpu().detach().numpy()), ord=2, axis=-1)
         dist_an = np.linalg.norm(np.squeeze((embedded_a-embedded_n).cpu().detach().numpy()), ord=2, axis=-1)
 
         pred_test.append(1*(dist_ap <= dist_an))
-
-        if batch_idx%1000 == 0:
-            print(batch_idx)
 
     predicted_labels = np.hstack(pred_test)
     try:
