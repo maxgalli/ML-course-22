@@ -11,7 +11,7 @@ from sklearn.svm import SVC
 def main():
     train = np.loadtxt("handout/train_triplets.txt", dtype=str, delimiter=" ")
 
-    features_file_name = "features_vgg16.pkl"
+    features_file_name = "features_irv2.pkl"
     with open(features_file_name, 'rb') as f:
         features_dct = pkl.load(f)
 
@@ -40,7 +40,7 @@ def main():
 
     X_train, X_test, y_train, y_test = train_test_split(x_train, y_labels, test_size=0.2, random_state=42)
 
-    steps = [('scaling', StandardScaler()), ('reduce_dim', PCA(n_components=110)), ('clf', SVC())]
+    steps = [('scaling', StandardScaler()), ('reduce_dim', PCA(n_components=80)), ('clf', SVC())]
     pipeline = Pipeline(steps)
 
     print("Fitting the pipeline...")
@@ -62,7 +62,7 @@ def main():
 
     predictions_int = predictions_int.astype(int)
 
-    np.savetxt("predictions/prediction_pipeline.txt", predictions_int, fmt="%i")
+    np.savetxt("predictions/prediction_pipeline_irv2.txt", predictions_int, fmt="%i")
 
 if __name__ == "__main__":
     main()
